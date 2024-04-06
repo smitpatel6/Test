@@ -1,3 +1,18 @@
+<?php
+// Start the session
+session_start();
+
+// Check if the user is not logged in
+if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    // User is not logged in, redirect to login page
+    header("Location: login.php");
+    exit;
+}
+
+// Include the image source file
+$imageSource = include 'image_source.php';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -72,24 +87,40 @@
             color: red;
             margin-bottom: 10px;
         }
+
         footer {
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    padding: 2px 0;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 2px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
         }
     </style>
 </head>
 <body>
     <header>
-        <img src="https://cdn11.bigcommerce.com/s-rcvl76lfrq/product_images/uploaded_images/2020-diy.jpg" alt="Logo" style="width: 400px;height: 250px;object-fit:cover;margin:0 auto;display:block;">
+        <img src="<?php echo $imageSource; ?>" alt="Logo" style="width: 400px;height: 250px;object-fit:cover;margin:0 auto;display:block;">
         <nav>
             <a href="index.php">Home</a>
+            <a href="product_page.php">All Products</a>
             <a href="shipping.php">Shipping</a>
             <a href="add_product_form.php">Add</a>
+            <?php
+            // Check if the user is logged in
+            if(isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
+                // If logged in, display the logout button
+                echo '
+                <form action="logout.php" method="post">
+                    <button type="submit">Logout</button>
+                </form>
+                ';
+            } else {
+                // If not logged in, display the login button
+                echo '<a href="login.php">Login</a>';
+            }
+            ?>
         </nav>
     </header>
     
@@ -137,7 +168,7 @@
 
         <input type="submit" value="Submit">
     </form>
-
+    
     <footer>
         <p>&copy; <?php echo date('Y'); ?> IT202 PROJECT</p>
     </footer>

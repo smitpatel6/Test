@@ -1,13 +1,15 @@
 <?php
-
 $category_id = filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT);
 $code = filter_input(INPUT_POST, 'code');
 $name = filter_input(INPUT_POST, 'name');
 $price = filter_input(INPUT_POST, 'price', FILTER_VALIDATE_FLOAT);
 $description = filter_input(INPUT_POST, 'description');
 
+$min_price = 0; // Minimum price allowed
+$max_price = 1000000; // Maximum price allowed
+
 if ($category_id == NULL || $category_id == FALSE || $code == NULL || 
-    $name == NULL || $price == NULL || $price == FALSE) {
+    $name == NULL || $price == NULL || $price == FALSE || $price < $min_price || $price > $max_price || $price < 0) {
     $error = "Invalid product data. Check all fields and try again.";
     echo "$error <br>";
 } else {
@@ -44,8 +46,6 @@ if ($category_id == NULL || $category_id == FALSE || $code == NULL ||
     }
 }
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -146,8 +146,6 @@ if ($category_id == NULL || $category_id == FALSE || $code == NULL ||
 
             <label>Description:</label>
             <input type="text" name="description"><br>
-
-    
 
             <input type="submit" value="Add Product"><br>
         </form>

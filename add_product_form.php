@@ -12,9 +12,12 @@ $statement->closeCursor();
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My diy improvement</title>
     <link rel="stylesheet" href="product_list.css">
     <style>
+
       body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -104,7 +107,7 @@ footer {
 <body>
 <body>
 <header>
-        <img src="https://cdn11.bigcommerce.com/s-rcvl76lfrq/product_images/uploaded_images/2020-diy.jpg" alt="Logo" style="width: 400px;height: 250px;object-fit:cover;margin:0 auto;display:block;">
+    <img src="<?php echo $imageSource; ?>" alt="Logo" style="width: 400px;height: 250px;object-fit:cover;margin:0 auto;display:block;">
         <nav>
             <a href="index.php">Home</a>
             <a href="shipping.php">Shipping</a>

@@ -10,28 +10,43 @@ if(isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     // User is not logged in
     $isLoggedIn = false;
 }
-// Check if the form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+// Check if the form is submitted and user is not logged in
+if ($_SERVER["REQUEST_METHOD"] == "POST" && !$isLoggedIn) {
     // Retrieve username and password from the form
     $username = $_POST['username'];
     $password = $_POST['password'];
-} else {
-    // If the form is not submitted, redirect back to the login page
-    header("Location: login.php");
+    
+    // Validate username and password (You should add your validation logic here)
+
+    // Assuming validation passes, set the session variable to indicate the user is logged in
+    $_SESSION['loggedin'] = true;
+
+    // Redirect to the shipping page or any other desired page after login
+    header("Location: index.php");
     exit();
 }
+
+// If the user is already logged in, redirect them to the shipping page
+if ($isLoggedIn) {
+    header("Location: shipping.php");
+    exit();
+}
+$imageSource = include "image_source.php";
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Shipping Page</title>
   <link rel="stylesheet" type="text/css" href="shipping.css">
 </head>
 <body>
 <header>
 
-        <img src="https://cdn11.bigcommerce.com/s-rcvl76lfrq/product_images/uploaded_images/2020-diy.jpg" alt="Logo" style="width: 400px;height: 250px;object-fit:cover;margin:0 auto;display:block;">
+<img src="<?php echo $imageSource; ?>" alt="Logo" style="width: 400px;height: 250px;object-fit:cover;margin:0 auto;display:block;">
         <h1>DIY Home Improvements</h1>
         <style>
           nav{

@@ -2,9 +2,12 @@
 // Start the session
 session_start();
 
-// Check if the user is logged in
+// Include image source file
+$imageSource = include "image_source.php";
+
+// Check if the user is already logged in
 if(isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
-    // User is already logged in, redirect to home page or wherever you want
+    // User is already logged in, redirect to home page
     header("Location: index.php");
     exit;
 }
@@ -14,9 +17,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve username and password from the form
     $username = $_POST['username'];
     $password = $_POST['password'];
-
-    // Hash the password for security
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
     // Connect to the database
     $servername = "localhost"; // Change this if your database is hosted elsewhere
@@ -32,37 +32,71 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("Connection failed: " . $conn->connect_error);
     }
 
-    // Prepare and bind the SQL statement to insert the user's credentials into the database
-    $stmt = $conn->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
-    $stmt->bind_param("ss", $username, $hashed_password);
+    // Prepare and bind the SQL statement to retrieve user's hashed password from the database
+    $stmt = $conn->prepare("SELECT password FROM users WHERE username = ?");
+    $stmt->bind_param("s", $username);
 
     // Execute the statement
-    if ($stmt->execute() === TRUE) {
-        // User registered successfully
-        $_SESSION['loggedin'] = true;
-        $_SESSION['username'] = $username;
-        // Redirect to home page or wherever you want
-        header("Location: index.php");
-        exit;
+    $stmt->execute();
+    $stmt->store_result();
+
+    // Check if user exists
+    if($stmt->num_rows > 0) {
+        // Bind the result
+        $stmt->bind_result($hashed_password);
+        $stmt->fetch();
+
+        // Verify password
+        if(password_verify($password, $hashed_password)) {
+            // Password is correct, set session variables
+            $_SESSION['loggedin'] = true;
+            $_SESSION['username'] = $username;
+            // Redirect to home page
+            header("Location: index.php");
+            exit;
+        } else {
+            // Incorrect password
+            $error = "Incorrect username or password.";
+        }
     } else {
-        // Error occurred while registering user
-        echo "Error: " . $stmt->error;
+        // User does not exist, create the user
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        $insert_stmt = $conn->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
+        $insert_stmt->bind_param("ss", $username, $hashed_password);
+        if ($insert_stmt->execute()) {
+            // User created successfully, set session variables
+            $_SESSION['loggedin'] = true;
+            $_SESSION['username'] = $username;
+            // Redirect to home page
+            header("Location: index.php");
+            exit;
+        } else {
+            // Failed to create user
+            $error = "Failed to create user.";
+        }
     }
 
-    // Close the statement and database connection
+    // Close the statements and database connection
     $stmt->close();
+    $insert_stmt->close();
     $conn->close();
 }
+
+// Error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login Page</title>
-  <link rel="stylesheet" type="text/css" href="shipping.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <link rel="stylesheet" type="text/css" href="shipping.css">
 </head>
 <body>
 <header>
-    <img src="https://cdn11.bigcommerce.com/s-rcvl76lfrq/product_images/uploaded_images/2020-diy.jpg" alt="Logo" style="width: 400px;height: 250px;object-fit:cover;margin:0 auto;display:block;">
+    <img src="<?php echo $imageSource; ?>" alt="Logo" style="width: 400px;height: 250px;object-fit:cover;margin:0 auto;display:block;">
     <h1>DIY Home Improvements</h1>
     <style>
         nav{
@@ -70,10 +104,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     </style>
     <nav>
-        <a href="index.php">Home</a>
-        <a href="login.php">Login</a>
-        <a href="product_page.php">All products</a>
-    </nav>
+    <a href="index.php">Home</a>
+    <a href="product_page.php">All products</a>
+</nav>
 </header>
 <main style="text-align:center;">
     <h1 style="margin-top:50px;">Login to Your Account</h1>
@@ -84,6 +117,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <input type="password" id="password" name="password"><br><br>
         <input type="submit" value="Login">
     </form>
+    <?php if(isset($error)) { ?>
+        <p><?php echo $error; ?></p>
+    <?php } ?>
 </main>
 </body>
 </html>
